@@ -1,0 +1,372 @@
+<html>
+    <head>
+        <title>Vector Map JS</title>
+        
+        <script type="text/javascript" src="vectormap.js"></script>
+        <script type="text/javascript" src="osm.js"></script>
+        <script type="text/javascript" src="logic.js"></script>
+        
+        <script type="text/javascript">
+
+            // import our namespaces so this code is clearer
+            for (var prop in com.stamen.osm) window[prop] = com.stamen.osm[prop];
+            for (var prop in com.stamen.vectormap) window[prop] = com.stamen.vectormap[prop];
+            for (var prop in com.stamen.logic) window[prop] = com.stamen.logic[prop];
+        
+            window.onload = function() {
+
+                var http = new XMLHttpRequest();
+                http.open("GET","map.xml",true); // TODO: accept path as a query string?
+
+                http.onreadystatechange = function () {
+                    if (http.readyState != 4) return;
+
+                    if (http.status != 200 && http.status != 304) {
+                        // TODO: deal with these errors?
+                        //return;
+                    }
+
+                    var osm = new OSM(http.responseXML);
+                    render(osm);
+                }
+                
+                http.send(null);
+            };
+            
+            function render(osm) {
+
+                console.log('initing Map...');
+                var t = new Date().getTime();
+
+                var styles = [
+
+                    new Style('water area', [
+                        new Rule(whereEquals('natural', 'water'), [
+                            new PolygonSymbolizer({
+                                fill: '#8fcce4',
+                                fillOpacity: 1.0
+                            }),
+                            new LineSymbolizer({
+                                stroke: '#84a7bd',
+                                strokeWidth: 2.0,
+                                strokeOpacity: 1.0,
+                                strokeLineJoin: 'round',
+                                strokeLineCap: 'round',
+                                strokeDashArray: 'none'
+                            })
+                        ])
+                    ]),
+
+                    new Style('citylike area', [
+                        new Rule(null, [
+                            new PolygonSymbolizer({
+                                fill: '#aaaaaa', // FIXME
+                                fillOpacity: 1.0
+                            }),
+                            new LineSymbolizer({
+                                stroke: '#808080', // FIXME
+                                strokeWidth: 1.0,
+                                strokeOpacity: 1.0,
+                                strokeLineJoin: 'round',
+                                strokeLineCap: 'round',
+                                strokeDashArray: 'none'
+                            })
+                        ])
+                    ]),
+
+                    new Style('parking area', [
+                        new Rule(OR(hasProperty('amenity'), hasProperty('building')), [
+                            new PolygonSymbolizer({
+                                fill: '#aaaaaa',
+                                fillOpacity: 1.0
+                            }),
+                            new LineSymbolizer({
+                                stroke: '#808080',
+                                strokeWidth: 1.0,
+                                strokeOpacity: 1.0,
+                                strokeLineJoin: 'round',
+                                strokeLineCap: 'round',
+                                strokeDashArray: 'none'
+                            })
+                        ])
+                    ]),
+
+                    new Style('parklike area', [
+                        new Rule(whereIn('leisure', [ 'park', 'playground' ]), [
+                            new PolygonSymbolizer({
+                                fill: '#9cd168',
+                                fillOpacity: 1.0
+                            }),
+                            new LineSymbolizer({
+                                stroke: '#9cd168',
+                                strokeWidth: 1.0,
+                                strokeOpacity: 1.0,
+                                strokeLineJoin: 'round',
+                                strokeLineCap: 'round',
+                                strokeDashArray: 'none'
+                            })
+                        ])
+                    ]),
+
+                    new Style('road outline major', [
+                        new Rule(whereEquals("highway", "motorway"), [
+                            new LineSymbolizer({
+                                stroke: '#15377b',
+                                strokeWidth: 8.0,
+                                strokeOpacity: 1.0,
+                                strokeLineJoin: 'round',
+                                strokeLineCap: 'round',
+                                strokeDashArray: 'none'
+                            })
+                        ]),
+                        new Rule(whereEquals("highway", "motorway_link"), [
+                            new LineSymbolizer({
+                                stroke: '#808080',
+                                strokeWidth: 8.0,
+                                strokeOpacity: 1.0,
+                                strokeLineJoin: 'round',
+                                strokeLineCap: 'round',
+                                strokeDashArray: 'none'
+                            })
+                        ]),
+                        new Rule(whereEquals("highway", "secondary"), [
+                            new LineSymbolizer({
+                                stroke: '#bfc08f',
+                                strokeWidth: 14.0,
+                                strokeOpacity: 1.0,
+                                strokeLineJoin: 'round',
+                                strokeLineCap: 'round',
+                                strokeDashArray: 'none'
+                            })
+                        ]),
+                        new Rule(whereEquals("highway", "primary"), [
+                            new LineSymbolizer({
+                                stroke: '#b6b08e',
+                                strokeWidth: 14.0,
+                                strokeOpacity: 1.0,
+                                strokeLineJoin: 'round',
+                                strokeLineCap: 'round',
+                                strokeDashArray: 'none'
+                            })
+                        ])
+                        // TODO: trunk?
+                    ]),
+
+                    new Style('road inline major', [
+                        new Rule(whereEquals("highway", "motorway"), [
+                            new LineSymbolizer({
+                                stroke: '#ea5e5d',
+                                strokeWidth: 6.0,
+                                strokeOpacity: 1.0,
+                                strokeLineJoin: 'round',
+                                strokeLineCap: 'round',
+                                strokeDashArray: 'none'
+                            })
+                        ]),
+                        new Rule(whereEquals("highway", "motorway_link"), [
+                            new LineSymbolizer({
+                                stroke: '#f09765',
+                                strokeWidth: 6.0,
+                                strokeOpacity: 1.0,
+                                strokeLineJoin: 'round',
+                                strokeLineCap: 'round',
+                                strokeDashArray: 'none'
+                            })
+                        ]),
+                        new Rule(whereEquals("highway", "secondary"), [
+                            new LineSymbolizer({
+                                stroke: '#fdfede',
+                                strokeWidth: 12.0,
+                                strokeOpacity: 1.0,
+                                strokeLineJoin: 'round',
+                                strokeLineCap: 'round',
+                                strokeDashArray: 'none'
+                            })
+                        ]),
+                        new Rule(whereEquals("highway", "primary"), [
+                            new LineSymbolizer({
+                                stroke: '#fceaa3',
+                                strokeWidth: 12.0,
+                                strokeOpacity: 1.0,
+                                strokeLineJoin: 'round',
+                                strokeLineCap: 'round',
+                                strokeDashArray: 'none'
+                            })
+                        ])
+                        // TODO: trunk?
+                    ]),
+
+                    new Style('road outline minor', [
+                        new Rule(null, [
+                            new LineSymbolizer({
+                                stroke: '#808080',
+                                strokeWidth: 5.0,
+                                strokeOpacity: 1.0,
+                                strokeLineJoin: 'round',
+                                strokeLineCap: 'round',
+                                strokeDashArray: 'none'
+                            })
+                        ])                        
+                    ]),
+
+                    new Style('road inline minor', [
+                        new Rule(null, [
+                            new LineSymbolizer({
+                                stroke: '#ffffff',
+                                strokeWidth: 3.0,
+                                strokeOpacity: 1.0,
+                                strokeLineJoin: 'round',
+                                strokeLineCap: 'round',
+                                strokeDashArray: 'none'
+                            })
+                        ])                        
+                    ]),                    
+
+                    new Style('path outline', [
+                        new Rule(null, [
+                            new LineSymbolizer({
+                                stroke: '#ffffff',
+                                strokeWidth: 4.0,
+                                strokeOpacity: 0.3,
+                                strokeLineJoin: 'round',
+                                strokeLineCap: 'round',
+                                strokeDashArray: 'none' // TODO: dashOnLength: 2, dashOffLength: 4
+
+                            })
+                        ])
+                    ]),
+
+                    new Style('path inline', [
+                        new Rule(null, [
+                            new LineSymbolizer({
+                                stroke: '#4e6439',
+                                strokeWidth: 2.0,
+                                strokeOpacity: 0.7,
+                                strokeLineJoin: 'round',
+                                strokeLineCap: 'round',
+                                strokeDashArray: 'none' // TODO: dashOnLength: 2, dashOffLength: 4
+                            })
+                        ])
+                    ]),
+
+                    new Style('road labels major', [
+                        new Rule(whereEquals("highway", "secondary"), [
+                            new TextSymbolizer({
+                                fill: '#000000',
+                                size: 11.0
+                            })
+                        ]),
+                        new Rule(whereEquals("highway", "primary"), [
+                            new TextSymbolizer({
+                                fill: '#000000',
+                                size: 11.0
+                            })
+                        ])
+                    ]),                
+
+                    new Style('road labels minor', [
+                        new Rule(null, [
+                            new TextSymbolizer({
+                                fill: '#404040',
+                                size: 8.0
+                            })
+                        ])
+                    ])
+                ];
+
+                console.log('styles created in', new Date().getTime() - t, 'ms');
+                t = new Date().getTime();                
+                
+                var highwayCases = {
+                    'motorway' : 4, 
+                    'motorway_link': 4,
+                    'trunk' : 3,
+                    'primary': 3, 
+                    'secondary': 2, 
+                    'tertiary': 1,
+                    '_default': 0 
+                }                
+                
+                var layers = [
+                    new Layer([ "citylike area" ],
+                                new DataSource(osm.areas.filter( AND( whereEquals('building', null), 
+                                                OR( whereIn('amenity', [ 'school', 'college', 'university', 'library', 'hospital' ]), 
+                                                    whereIn('landuse', [ 'industrial', 'commercial' ]), 
+                                                    whereIn('aeroway', [ 'apron' ]) ) ) ).sort(compareDescending('z_order' /*'way_area'*/)))
+                    ),
+                    new Layer([ "parklike area" ],
+                                new DataSource(osm.areas.filter( AND( whereEquals('building', null), 
+                                                OR( whereIn('amenity', [ 'park' ]), 
+                                                    whereIn('landuse', [ 'recreation_ground', 'greenfield', 'cemetery' ]), 
+                                                    whereIn('leisure', [ 'park', 'pitch', 'track', 'golf_course', 'common', 'playground', 'garden', 'plaza' ]) ) ) ) )
+                    ),
+                    new Layer([ "parking area" ],
+                                new DataSource(osm.areas.filter( AND( whereEquals('building', null), whereIn('amenity', [ 'parking' ]) ) ) )
+                    ),    			
+                    new Layer([ "water area" ],
+                                new DataSource(osm.areas.filter( OR( whereIn('landuse', [ 'reservoir', 'water' ]),  
+                                                    whereIn('natural', [ 'lake', 'water', 'land' ]) ) ) )
+                    ),                
+                    new Layer([ "path outline" ],
+                                new DataSource(osm.ways.filter( whereIn('highway', [ 'footpath', 'footway', 'steps', 'pedestrian', 'path', 'cycleway' ]) ) )
+    			    ),
+                    new Layer([ "road outline minor" ],
+                                new DataSource(osm.ways.filter( whereIn('highway', [ 'residential', 'unclassified', 'service', 'minor', 'road', 'tertiary' ] ) ).sort( compareByCase( 'highway', highwayCases ) ) )
+    			    ),
+                    new Layer([ "road outline major" ],
+                                new DataSource(osm.ways.filter( whereIn('highway', [ 'secondary', 'trunk', 'primary', 'motorway', 'motorway_link' ] ) ).sort( compareByCase( 'highway', highwayCases ) ) )
+    			    ),
+                    new Layer([ "path inline" ],
+                                new DataSource(osm.ways.filter( whereIn('highway', [ 'footpath', 'footway', 'steps', 'pedestrian', 'path', 'cycleway' ]) ) )
+    			    ),
+                    new Layer([ "road inline minor" ],
+                                new DataSource(osm.ways.filter( whereIn('highway', [ 'residential', 'unclassified', 'service', 'minor', 'road', 'tertiary' ] ) ).sort( compareByCase( 'highway', highwayCases ) ) )
+    			    ),
+                    new Layer([ "road inline major" ],
+                                new DataSource(osm.ways.filter( whereIn('highway', [ 'secondary', 'trunk', 'primary', 'motorway', 'motorway_link' ] ) ).sort( compareByCase( 'highway', highwayCases ) ) )
+    			    )/*,
+                    new Layer([ "road labels major" ],
+                                new DataSource(osm.ways.filter( whereIn('highway', [ 'secondary', 'trunk', 'primary', 'motorway', 'motorway_link' ] ) ).sort( compareByCase( 'highway', highwayCases ) ) )
+    			    ),
+                    new Layer([ "road labels minor" ],
+                                new DataSource(osm.ways.filter( whereIn('highway', [ 'residential', 'unclassified', 'service', 'minor', 'road', 'tertiary' ] ) ).sort( compareByCase( 'highway', highwayCases ) ) )
+    			    )*/
+                ];
+
+                console.log('layers created in', new Date().getTime() - t, 'ms');
+                t = new Date().getTime();                
+
+                ////////// TODO/FIXME still not really sure where projection should happen
+                
+                var lonScale = 640 / (osm.bounds.maxLon - osm.bounds.minLon);
+                var latScale = 640 / (osm.bounds.maxLat - osm.bounds.minLat);
+                for (var i = 0; i < osm.nodes.length; i++) {
+                    var coord = osm.nodes[i].geometry.coordinates;
+                    var x = lonScale * (coord[0] - osm.bounds.minLon);
+                    var y = latScale * (coord[1] - osm.bounds.minLat);
+                    y = 640 - y;
+                    coord[0] = x;
+                    coord[1] = y;
+                }
+
+                console.log('nodes projected in', new Date().getTime() - t, 'ms');
+
+                //////////                
+
+                var map = new Map('#dbeee9', layers, styles);
+                map.render(document.getElementById('canvas'));
+                
+            }
+            
+        </script>
+
+        
+    </head>
+    <body>
+        <h1>Client-side Map Styling with Javascript and the HTML &lt;canvas&gt; Element</h1>
+        <canvas id="canvas" width="640" height="640" style="border: 1px solid gray"></canvas>
+        <p>The above map is styled dynamically in the browser using a javascript implementation of the core architecture of the open source <a href="http://mapnik.org">mapnik</a> library. (Implemented by eye-balling the XML and reading the wiki, mainly).</p>
+        <p>This page loads 1.5Mb of uncompressed raw XML output - please allow a little time for delivery. Tested in Firefox 3.0 and Safari 4.0 only.</p>
+        <p>Map data is licensed <a href="http://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a> by <a href="http://www.openstreetmap.org">OpenStreetMap.org</a> contributors.</p>
+    </body>
+</html>
