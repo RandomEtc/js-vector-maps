@@ -1,4 +1,4 @@
-An MIT licensed javascript implementation of some of the mapnik Layer, Rule, Style and symbolizer
+A BSD licensed javascript implementation of some of the mapnik Layer, Rule, Style and symbolizer
 classes (implemented mainly by eye-balling the XML and reading the wiki).
 
 Also javascript classes to take XML from the OpenStreetMap API and turn it into GeoJSON-ish things.
