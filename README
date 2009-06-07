@@ -1,0 +1,21 @@
+An MIT licensed javascript implementation of some of the mapnik Layer, Rule, Style and symbolizer
+classes (implemented mainly by eye-balling the XML and reading the wiki).
+
+Also javascript classes to take XML from the OpenStreetMap API and turn it into GeoJSON-ish things.
+
+Also javascript classes to make using Array.filter more sane, and slightly SQL-ish.
+
+Nowhere near feature complete. There is an initial attempt to implement text rendering, 
+which is where things should get interesting.
+
+OpenLayers has a similar set of classes for styling vector data, and Cartagen also explores
+similar ideas.
+
+TODO:
+ - proper projections (right now things just get squeezed into squares)
+ - more symbolizers (text, point, etc)
+ - try an SVG renderer instead of canvas (DOM is handy!)
+ - load and parse mapnik-ish xml files (URLs for sources?)
+ - load and parse cascadenik files (CSS++)
+ - use something like YQL to transform the XML to GeoJSON on a server?
+ 
