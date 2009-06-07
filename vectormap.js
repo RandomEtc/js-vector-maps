@@ -35,7 +35,7 @@ com.stamen.vectormap.Map.prototype = {
     // this is the most naive implementation of a render loop I could think of
     render: function(canvas) {
         var t = new Date().getTime();
-        if (console && console.log) console.log('starting rendering...');
+        if (window.console && window.console.log) console.log('starting rendering...');
         var ctx = canvas.getContext('2d');
         ctx.clearRect(0,0,canvas.width,canvas.height);
         if (this.bgColor) {
@@ -64,7 +64,7 @@ com.stamen.vectormap.Map.prototype = {
                 } // features
             } // styles
         } // layers
-        if (console && console.log) console.log('done rendering... ' + (new Date().getTime() - t) + ' ms');
+        if (window.console && window.console.log) console.log('done rendering... ' + (new Date().getTime() - t) + ' ms');
     }
 };
 

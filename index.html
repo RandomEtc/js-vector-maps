@@ -35,7 +35,7 @@
             
             function render(osm) {
 
-                console.log('initing Map...');
+                if (window.console && window.console.log) console.log('initing Map...');
                 var t = new Date().getTime();
 
                 var styles = [
@@ -274,7 +274,7 @@
                     ])
                 ];
 
-                console.log('styles created in', new Date().getTime() - t, 'ms');
+                if (window.console && window.console.log) console.log('styles created in', new Date().getTime() - t, 'ms');
                 t = new Date().getTime();                
                 
                 var highwayCases = {
@@ -333,7 +333,7 @@
     			    )*/
                 ];
 
-                console.log('layers created in', new Date().getTime() - t, 'ms');
+                if (window.console && window.console.log) console.log('layers created in', new Date().getTime() - t, 'ms');
                 t = new Date().getTime();                
 
                 ////////// TODO/FIXME still not really sure where projection should happen
@@ -349,7 +349,7 @@
                     coord[1] = y;
                 }
 
-                console.log('nodes projected in', new Date().getTime() - t, 'ms');
+                if (window.console && window.console.log) console.log('nodes projected in', new Date().getTime() - t, 'ms');
 
                 //////////                
 

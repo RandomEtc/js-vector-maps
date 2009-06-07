@@ -32,7 +32,7 @@ com.stamen.osm.POLYGON_TAGS = {
 
 com.stamen.osm.OSM = function(responseXML) {
 
-    if (console && console.log) console.log('initing OSM object...');
+    if (window.console && window.console.log) console.log('initing OSM object...');
     var t = new Date().getTime();
 
     this.nodes = [];
@@ -49,7 +49,7 @@ com.stamen.osm.OSM = function(responseXML) {
         maxLon: parseFloat(boundsXML.attributes.getNamedItem('maxlon').value)
     };
 
-    if (console && console.log) console.log('got bounds ' + this.bounds);
+    if (window.console && window.console.log) console.log('got bounds ' + this.bounds);
     
     // so we only have to loop over the xml nodes once
     // (for when we're parsing node refs in ways)
@@ -76,7 +76,7 @@ com.stamen.osm.OSM = function(responseXML) {
         nodeHash[id] = node;
     }    
 
-    if (console && console.log) console.log('got ' + this.nodes.length + ' nodes');
+    if (window.console && window.console.log) console.log('got ' + this.nodes.length + ' nodes');
 
     var wayXMLs = responseXML.getElementsByTagName("way");
     for (var i = 0; i < wayXMLs.length; i++) {
@@ -92,7 +92,7 @@ com.stamen.osm.OSM = function(responseXML) {
                 coordinates.push(theNode.geometry.coordinates);
             }
             else {
-                if (console && console.log) console.log('node ref ' + ref + ' not found');            
+                if (window.console && window.console.log) console.log('node ref ' + ref + ' not found');            
             }
         }
 
@@ -118,10 +118,10 @@ com.stamen.osm.OSM = function(responseXML) {
 
     } // for each way
     
-    if (console && console.log) console.log('got ' + this.ways.length + ' ways');
-    if (console && console.log) console.log('got ' + this.areas.length + ' areas');    
+    if (window.console && window.console.log) console.log('got ' + this.ways.length + ' ways');
+    if (window.console && window.console.log) console.log('got ' + this.areas.length + ' areas');    
 
-    if (console && console.log) console.log('done initing OSM object... ' + (new Date().getTime() - t) + ' ms');
+    if (window.console && window.console.log) console.log('done initing OSM object... ' + (new Date().getTime() - t) + ' ms');
 
 };
 
