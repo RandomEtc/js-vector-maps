@@ -1,6 +1,7 @@
 /** Make GeoJSON-esque objects from an E4X */
 
 // Keys for Area tags
+// TODO: can we use http://svn.openstreetmap.org/applications/utils/export/osm2pgsql/default.style here?
 var POLYGON_TAGS = {
     'aeroway': true,
     'amenity': true,

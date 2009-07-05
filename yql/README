@@ -1,0 +1,25 @@
+These files use Yahoo's new YQL to help you perform table-like queries against the OSM API. 
+
+This is really just at proof-of-concept stage at the moment.
+
+If you're logged into Yahoo you can add 'osm' to the list of available tables by loading 
+the YQL console with the osm-api.env file. Reference the one on github using the following
+link:
+
+http://developer.yahoo.com/yql/console/?env=http://github.com/RandomEtc/js-vector-maps/raw/master/yql/osm-api.env
+
+The interesting bit is when you use YQL's "execute" element to transform the data. That's 
+what I'm doing in osm.geojson.xml, which references osm-yql.js. Sadly YQL round-trips js
+responses through XML, and the transform process doesn't deal very well with arrays of arrays.
+Consequently, I'm using the JSON.stringify function from json.org to serialize the output
+of osm-yql.js and this means you can't output XML. On the other hand, this approach also
+ensures that the numbers come out as numbers and not as strings.
+
+Here's an example query to turn OSM's XML into GeoJSON:
+
+http://developer.yahoo.com/yql/console/?q=select%20*%20from%20osm.geojson%20where%20bbox%3D%2211.54%2C48.14%2C11.543%2C48.145%22&env=http%3A%2F%2Fgithub.com%2FRandomEtc%2Fjs-vector-maps%2Fraw%2Fmaster%2Fyql%2Fosm-api.env
+
+You need to use quite a small bounding box or you run into YQL's execution limits.
+
+Otherwise, it works!
+
