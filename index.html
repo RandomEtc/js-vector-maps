@@ -64,7 +64,7 @@
             
             function render(osm) {
 
-                console.log(osm);
+                if (window.console && window.console.log) console.log(osm);
 
                 if (window.console && window.console.log) console.log('initing Map...');
                 var t = new Date().getTime();
