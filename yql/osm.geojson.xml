@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<table xmlns="http://query.yahooapis.com/v1/schema/table.xsd">
+  <meta>
+    <author>Tom Carden</author>
+    <documentationURL>http://wiki.openstreetmap.org/wiki/OSM_Protocol_Version_0.6</documentationURL>
+    <sampleQuery>select * from {table} where bbox="11.54,48.14,11.543,48.145"</sampleQuery>
+  </meta>
+  <bindings>
+    <select itemPath="" produces="XML">
+      <urls>
+        <url>http://api.openstreetmap.org/api/0.6/map</url>
+      </urls>
+      <inputs>
+        <key id="bbox" type="xs:string" paramType="query" required="true"/>
+      </inputs>
+      <execute><![CDATA[
+
+	y.include("http://www.json.org/json2.js");
+        y.include("http://github.com/RandomEtc/js-vector-maps/raw/master/yql/osm-yql.js");   
+
+        // grab the whole thing
+        var xml = request.get().response;
+        
+        // use JSON.stringify here because YQL's converter doesn't like arrays of arrays
+        response.object = JSON.stringify(new OSM(xml));
+        
+      ]]></execute>
+    </select>
+  </bindings>
+</table>

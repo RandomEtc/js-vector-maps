@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<table xmlns="http://query.yahooapis.com/v1/schema/table.xsd">
+  <meta>
+    <author>Tom Carden</author>
+    <documentationURL>http://wiki.openstreetmap.org/wiki/OSM_Protocol_Version_0.6</documentationURL>
+    <sampleQuery>select * from {table} where bbox="11.54,48.14,11.543,48.145"</sampleQuery>
+  </meta>
+  <bindings>
+    <select itemPath="" produces="XML">
+      <urls>
+        <url>http://api.openstreetmap.org/api/0.6/map</url>
+      </urls>
+      <inputs>
+        <key id="bbox" type="xs:string" paramType="query" required="true"/>
+      </inputs>
+      <execute><![CDATA[
+
+        // grab the whole thing
+        var xml = request.get().response;
+        
+        // keep node coordinates here, by ID
+        var nodesById = {};
+        for each (var node in xml.node) {
+            nodesById[node.@id] = node;
+        }
+
+        // this will be our output
+        var osm = <osm></osm>;
+
+        // just add the bounds as-is        
+        osm.appendChild(xml.bounds);
+
+        for each (var way in xml.way) {
+            var way2 = <way></way>;
+            // TODO: add attributes
+            for each (var nd in way.nd) {
+                way2.appendChild(nodesById[nd.@ref]);
+            }
+            for each (var tag in way.tag) {
+                if (tag.@k.toString() != "created_by") {
+                    way2.appendChild(tag);
+                }
+            }
+            osm.appendChild(way2);
+        }
+        
+        // TODO: what about relations?
+                
+        response.object = osm;
+        
+      ]]></execute>
+    </select>
+  </bindings>
+</table>

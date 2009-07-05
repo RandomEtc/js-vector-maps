@@ -3,7 +3,7 @@
         <title>Vector Map JS</title>
         
         <script type="text/javascript" src="vectormap.js"></script>
-        <script type="text/javascript" src="osm.js"></script>
+        <!--script type="text/javascript" src="osm.js"></script-->
         <script type="text/javascript" src="logic.js"></script>
         
         <script type="text/javascript">
@@ -15,7 +15,7 @@
         
             window.onload = function() {
 
-                var http = new XMLHttpRequest();
+/*                var http = new XMLHttpRequest();
                 http.open("GET","map.xml",true); // TODO: accept path as a query string?
 
                 http.onreadystatechange = function () {
@@ -30,10 +30,41 @@
                     render(osm);
                 }
                 
-                http.send(null);
+                http.send(null); */
+
+                // bbox = minlon, minlat, maxlon, maxlat
+                //var bbox = [ -122.42725,37.75319,-122.40022,37.77493 ];
+                //var bbox = [ -0.109469, 51.506652, -0.106234, 51.508789 ];
+                //var bbox = [ 11.54, 48.14, 11.543, 48.145 ];
+                //var bbox = [ -0.17011642456054688, 51.522629700334875, -0.1373291015625, 51.53843463708563 ];
+                var bbox = [ -0.15827178955078125, 51.52327054772943, -0.1490020751953125, 51.530372669130536 ];
+                
+                var args = {
+                    q: "select * from osm.geojson where bbox=\"" + bbox.join(',') + "\"",
+                    format: "json",
+                    env: "http://studio.stamen.com/~tom/osm-api/osm-api.env",
+                    callback: "cbfunc"
+                }
+                
+                var url = "http://query.yahooapis.com/v1/public/yql";
+                var queries = [];
+                for (var key in args) {
+                    queries.push(key + "=" + args[key]);
+                }
+                
+                var script = document.createElement("script");
+                script.src = url + "?" + queries.join("&");
+                document.getElementsByTagName("head")[0].appendChild(script);
+                
             };
             
+            function cbfunc(yql) {
+                render(yql.query.results.result);
+            }
+            
             function render(osm) {
+
+                console.log(osm);
 
                 if (window.console && window.console.log) console.log('initing Map...');
                 var t = new Date().getTime();
@@ -56,6 +87,23 @@
                             })
                         ])
                     ]),
+
+                    new Style('building area', [
+                        new Rule(null, [
+                            new PolygonSymbolizer({
+                                fill: '#808080',
+                                fillOpacity: 1.0
+                            }),
+                            new LineSymbolizer({
+                                stroke: '#404040',
+                                strokeWidth: 1.0,
+                                strokeOpacity: 1.0,
+                                strokeLineJoin: 'round',
+                                strokeLineCap: 'round',
+                                strokeDashArray: 'none'
+                            })
+                        ])
+                    ]),                    
 
                     new Style('citylike area', [
                         new Rule(null, [
@@ -92,7 +140,7 @@
                     ]),
 
                     new Style('parklike area', [
-                        new Rule(whereIn('leisure', [ 'park', 'playground' ]), [
+                        new Rule(whereIn('leisure', [ 'park', 'playground', 'garden' ]), [
                             new PolygonSymbolizer({
                                 fill: '#9cd168',
                                 fillOpacity: 1.0
@@ -304,9 +352,13 @@
                                 new DataSource(osm.areas.filter( AND( whereEquals('building', null), whereIn('amenity', [ 'parking' ]) ) ) )
                     ),    			
                     new Layer([ "water area" ],
-                                new DataSource(osm.areas.filter( OR( whereIn('landuse', [ 'reservoir', 'water' ]),  
+                                new DataSource(osm.areas.filter( OR( whereIn('landuse', [ 'reservoir', 'water' ]),
+                                                    whereIn('waterway', [ 'river', 'canal' ]),
                                                     whereIn('natural', [ 'lake', 'water', 'land' ]) ) ) )
                     ),                
+                    new Layer([ "building area" ],
+                                new DataSource(osm.areas.filter( hasProperty('building') ) )
+                    ),    			
                     new Layer([ "path outline" ],
                                 new DataSource(osm.ways.filter( whereIn('highway', [ 'footpath', 'footway', 'steps', 'pedestrian', 'path', 'cycleway' ]) ) )
     			    ),
@@ -338,18 +390,53 @@
 
                 ////////// TODO/FIXME still not really sure where projection should happen
                 
-                var lonScale = 640 / (osm.bounds.maxLon - osm.bounds.minLon);
-                var latScale = 640 / (osm.bounds.maxLat - osm.bounds.minLat);
+                var maxX = osm.bounds.maxLon;
+                var minX = osm.bounds.minLon;
+                var minY = project(osm.bounds.minLat);
+                var maxY = project(osm.bounds.maxLat);
+                
+                var xScale = 640 / (maxX - minX);
+                var yScale = 640 / (maxY - minY);
+                var scale = Math.min(xScale, yScale);
+                // TODO: center the view with a tx, ty
+                
                 for (var i = 0; i < osm.nodes.length; i++) {
                     var coord = osm.nodes[i].geometry.coordinates;
-                    var x = lonScale * (coord[0] - osm.bounds.minLon);
-                    var y = latScale * (coord[1] - osm.bounds.minLat);
+                    var x = scale * (coord[0] - minX);
+                    var y = scale * (project(coord[1]) - minY);
                     y = 640 - y;
                     coord[0] = x;
                     coord[1] = y;
                 }
 
-                if (window.console && window.console.log) console.log('nodes projected in', new Date().getTime() - t, 'ms');
+                for (var i = 0; i < osm.ways.length; i++) {
+                    var ring = osm.ways[i].geometry.coordinates;
+                    for (var j = 0; j < ring.length; j++) {
+                        var coord = ring[j];
+                        var x = scale * (coord[0] - minX);
+                        var y = scale * (project(coord[1]) - minY);
+                        y = 640 - y;
+                        coord[0] = x;
+                        coord[1] = y;
+                    }
+                }
+
+                for (var i = 0; i < osm.areas.length; i++) {
+                    var polygon = osm.areas[i].geometry;
+                    for (var j = 0; j < polygon.coordinates.length; j++) {
+                        var ring = polygon.coordinates[j];
+                        for (var k = 0; k < ring.length; k++) {
+                            var coord = ring[k];
+                            var x = scale * (coord[0] - minX);
+                            var y = scale * (project(coord[1]) - minY);
+                            y = 640 - y;
+                            coord[0] = x;
+                            coord[1] = y;
+                        }
+                    }
+                }
+
+                if (window.console && window.console.log) console.log('nodes/ways/areas projected in', new Date().getTime() - t, 'ms');
 
                 //////////                
 
@@ -357,9 +444,12 @@
                 map.render(document.getElementById('canvas'));
                 
             }
+
+            function project(lat) {
+                return 180.0/Math.PI*Math.log(Math.tan(0.25 * Math.PI + 0.5 * lat*Math.PI/180.0));
+            }
             
         </script>
-
         
     </head>
     <body>

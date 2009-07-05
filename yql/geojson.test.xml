@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<table xmlns="http://query.yahooapis.com/v1/schema/table.xsd">
+  <meta>
+    <author>Tom Carden</author>
+    <sampleQuery>select * from {table}</sampleQuery>
+  </meta>
+  <bindings>
+    <select itemPath="" produces="XML">
+      <urls>
+        <url></url>
+      </urls>
+      <inputs>
+      </inputs>
+      <execute><![CDATA[
+
+	y.include("http://www.json.org/json2.js");
+
+        var geoJSON = JSON.stringify({       "type": "FeatureCollection",
+				  "features": [
+				    { "type": "Feature",
+				      "geometry": {"type": "Point", "coordinates": [102.0, 0.5]},
+				      "properties": {"prop0": "value0"}
+				      },
+				    { "type": "Feature",
+				      "geometry": {
+					"type": "LineString",
+					"coordinates": [
+					  [102.0, 0.0], [103.0, 1.0], [104.0, 0.0], [105.0, 1.0]
+					  ]
+					},
+				      "properties": {
+					"prop0": "value0",
+					"prop1": 0.0
+					}
+				      },
+				    { "type": "Feature",
+				       "geometry": {
+					 "type": "Polygon",
+					 "coordinates": [
+					   [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0],
+					     [100.0, 1.0], [100.0, 0.0] ]
+					   ]
+				       },
+				       "properties": {
+					 "prop0": "value0",
+					 "prop1": {"this": "that"}
+					 }
+				       }
+				     ]
+				   });
+
+           response.object = geoJSON;
+
+      ]]></execute>
+    </select>
+  </bindings>
+</table>

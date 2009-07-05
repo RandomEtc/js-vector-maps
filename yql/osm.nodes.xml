@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<table xmlns="http://query.yahooapis.com/v1/schema/table.xsd">
+  <meta>
+    <author>Tom Carden</author>
+    <documentationURL>http://wiki.openstreetmap.org/wiki/OSM_Protocol_Version_0.6</documentationURL>
+    <sampleQuery>select * from {table} where bbox="11.54,48.14,11.543,48.145"</sampleQuery>
+  </meta>
+  <bindings>
+    <select itemPath="osm.node" produces="XML">
+      <urls>
+        <url>http://api.openstreetmap.org/api/0.6/map</url>
+      </urls>
+      <inputs>
+        <key id="bbox" type="xs:string" paramType="query" required="true"/>
+      </inputs>
+    </select>
+  </bindings>
+</table>
