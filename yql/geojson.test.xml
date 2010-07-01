@@ -13,7 +13,7 @@
       </inputs>
       <execute><![CDATA[
 
-	y.include("http://www.json.org/json2.js");
+	y.include("http://github.com/RandomEtc/js-vector-maps/raw/master/yql/json2.js");
 
         var geoJSON = JSON.stringify({       "type": "FeatureCollection",
 				  "features": [
